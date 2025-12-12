@@ -1,10 +1,6 @@
 name: Build Fixed Camera APK
 
-on:
-  push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -24,17 +20,27 @@ jobs:
           flutter-version: '3.19.0'
           cache: true
 
-      # 1. Генерируем проект с именем пакета com.example.hybrid
+      # 1. Создаем проект
       - name: Generate Android Project
-        run: flutter create . --project-name=hybrid_test_app --org com.example.hybrid
+        run: flutter create . --project-name=hybrid_activity_app --org com.example.hybrid
 
-      # 2. Подменяем MainActivity.kt на нашу версию с фабрикой View
-      - name: Inject Kotlin Code
+      # 2. Внедряем Kotlin код
+      - name: Inject Kotlin Files
         run: |
+          # Заменяем MainActivity
           cp native_code/MainActivity.kt android/app/src/main/kotlin/com/example/hybrid/MainActivity.kt
-          echo "Injected Native View Factory logic"
+          # Добавляем NativeActivity
+          cp native_code/NativeActivity.kt android/app/src/main/kotlin/com/example/hybrid/NativeActivity.kt
+          echo "Kotlin files injected"
 
-      # 3. Фикс версии для WebView
+      # 3. ВАЖНО: Регистрируем новую Activity в Manifest!
+      # Ищем закрывающий тег основной activity и добавляем после него новую activity
+      - name: Register NativeActivity in Manifest
+        run: |
+          sed -i 's|</activity>.*|</activity><activity android:name=".NativeActivity" android:label="Native Screen" />|' android/app/src/main/AndroidManifest.xml
+          echo "Manifest updated with NativeActivity"
+
+      # 4. Фикс версии SDK
       - name: Fix minSdkVersion
         run: sed -i 's|minSdkVersion .*|minSdkVersion 21|g' android/app/build.gradle
 
@@ -47,5 +53,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: hybrid-app-release
+          name: hybrid-native-apk
           path: build/app/outputs/flutter-apk/app-release.apk
