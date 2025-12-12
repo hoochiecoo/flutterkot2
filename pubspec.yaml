@@ -1,5 +1,5 @@
-name: hybrid_test_app
-description: Flutter + Native View + WebView.
+name: hybrid_activity_app
+description: Flutter + Native Activity + WebView.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -9,7 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # Нужен для вкладки 3
   webview_flutter: ^4.7.0
 
 flutter:
