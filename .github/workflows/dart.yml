@@ -1,0 +1,51 @@
+name: Build Fixed Camera APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.19.0'
+          cache: true
+
+      # 1. Генерируем проект с именем пакета com.example.hybrid
+      - name: Generate Android Project
+        run: flutter create . --project-name=hybrid_test_app --org com.example.hybrid
+
+      # 2. Подменяем MainActivity.kt на нашу версию с фабрикой View
+      - name: Inject Kotlin Code
+        run: |
+          cp native_code/MainActivity.kt android/app/src/main/kotlin/com/example/hybrid/MainActivity.kt
+          echo "Injected Native View Factory logic"
+
+      # 3. Фикс версии для WebView
+      - name: Fix minSdkVersion
+        run: sed -i 's|minSdkVersion .*|minSdkVersion 21|g' android/app/build.gradle
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release --no-tree-shake-icons
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: hybrid-app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
