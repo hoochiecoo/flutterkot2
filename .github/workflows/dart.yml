@@ -47,6 +47,14 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
+      - name: Cache Android SDK Build-Tools
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/sdk/build-tools # Или другой путь, где устанавливаются Build-Tools
+          key: ${{ runner.os }}-android-build-tools-30.0.3 # Ключ, зависящий от ОС и версии Build-Tools
+          restore-keys: |
+            ${{ runner.os }}-android-build-tools-
+      
       - name: Build APK
         run: flutter build apk --release --no-tree-shake-icons
 
