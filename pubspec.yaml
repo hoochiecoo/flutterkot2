@@ -1,0 +1,16 @@
+name: hybrid_test_app
+description: Flutter + Native View + WebView.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Нужен для вкладки 3
+  webview_flutter: ^4.7.0
+
+flutter:
+  uses-material-design: true
